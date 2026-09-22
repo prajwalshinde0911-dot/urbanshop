@@ -1,0 +1,34 @@
+:root {
+  --color-bg: #FAF8F4;
+  --color-navy: #16233F;
+  --color-accent: #FF7A45;
+  --color-teal: #1F9E8C;
+  --color-muted: #6B7280;
+  --color-white: #FFFFFF;
+  --font-heading: 'Fraunces', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-navy);
+  line-height: 1.5;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+}
