@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
 from database import supabase
+from auth_helper import verify_admin
+from activity import log_activity
 
 router = APIRouter(prefix="/products", tags=["products"])
+
 
 class ProductCreate(BaseModel):
     title: str
@@ -14,6 +17,13 @@ class ProductCreate(BaseModel):
     images: Optional[List[str]] = []
     reseller_link: str
     is_active: Optional[bool] = True
+
+
+def clean(data: dict) -> dict:
+    if not data.get("category_id"):
+        data["category_id"] = None
+    return data
+
 
 @router.get("/")
 def get_products(
@@ -38,28 +48,40 @@ def get_products(
     if search:
         query = query.ilike("title", f"%{search}%")
 
-    ascending = sort_order == "asc"
-    query = query.order(sort_by, desc=not ascending)
+    query = query.order(sort_by, desc=(sort_order != "asc"))
+    return query.execute().data
 
-    response = query.execute()
-    return response.data
 
 @router.get("/{product_id}")
 def get_product(product_id: str):
-    response = supabase.table("products").select("*").eq("id", product_id).execute()
-    return response.data
+    response = supabase.table("products").select("*").eq("id", product_id).eq("is_active", True).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return response.data[0]
+
 
 @router.post("/")
-def create_product(product: ProductCreate):
-    response = supabase.table("products").insert(product.model_dump()).execute()
+def create_product(product: ProductCreate, admin=Depends(verify_admin)):
+    data = clean(product.model_dump())
+    data["created_by"] = admin.id
+    response = supabase.table("products").insert(data).execute()
+    row = response.data[0]
+    log_activity(admin.id, "created", "product", row["id"], row["title"])
     return response.data
+
 
 @router.put("/{product_id}")
-def update_product(product_id: str, product: ProductCreate):
-    response = supabase.table("products").update(product.model_dump()).eq("id", product_id).execute()
+def update_product(product_id: str, product: ProductCreate, admin=Depends(verify_admin)):
+    data = clean(product.model_dump())
+    response = supabase.table("products").update(data).eq("id", product_id).execute()
+    log_activity(admin.id, "updated", "product", product_id, product.title)
     return response.data
 
+
 @router.delete("/{product_id}")
-def delete_product(product_id: str):
-    response = supabase.table("products").delete().eq("id", product_id).execute()
+def delete_product(product_id: str, admin=Depends(verify_admin)):
+    existing = supabase.table("products").select("title").eq("id", product_id).execute()
+    title = existing.data[0]["title"] if existing.data else None
+    supabase.table("products").delete().eq("id", product_id).execute()
+    log_activity(admin.id, "deleted", "product", product_id, title)
     return {"message": "Product deleted"}
