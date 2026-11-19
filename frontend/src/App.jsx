@@ -14,6 +14,7 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
+import Banners from './pages/admin/Banners';
 import './common.css';
 
 function App() {
@@ -32,7 +33,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/reset-password" element={<ResetPassword/>} />
+                <Route path="/admin/banners" element={<ProtectedRoute><Banners /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
@@ -43,5 +45,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;

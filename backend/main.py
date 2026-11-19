@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import categories, products, auth, wishlist, addresses, analytics, admin
+from routers import categories, products, auth, wishlist, addresses, analytics, admin, banners
 
 app = FastAPI(title="Urbanshop API")
 
@@ -22,6 +22,7 @@ app.include_router(wishlist.router)
 app.include_router(addresses.router)
 app.include_router(analytics.router)
 app.include_router(admin.router)
+app.include_router(banners.router)
 
 
 @app.get("/")
