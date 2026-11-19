@@ -33,7 +33,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword/>} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/admin/banners" element={<ProtectedRoute><Banners /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -45,3 +45,5 @@ function App() {
     </BrowserRouter>
   );
 }
+
+export default App;
